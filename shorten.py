@@ -13,7 +13,9 @@ mongo = PyMongo(app)
 
 url_list = []
 
-mongo.db.systemInfo.update_one({'descriptor' : 'startups'}, {'$push': {'startup' : datetime.datetime.now()}}, upsert=True)
+mongo.db.systemInfo.update_one(
+    {'descriptor' : 'startups'},
+    {'$push': {'startup' : datetime.datetime.now().strftime("%m/%d/%Y, %H:%M:%S")}}, upsert=True)
 
 @app.route('/')
 def default():
@@ -24,7 +26,8 @@ def default():
 def create_short_url():
     request_data = request.get_json()
     destination = request_data['to']
-    url = '/short/'
+
+    url = request.url_root + 'short/'
 
     existing_url = mongo.db['destinations'].find_one({"destination": destination})
     if (existing_url != None):
@@ -49,9 +52,9 @@ def create_short_url():
         mongo.db.shortUrls.insert({
             'path' : random_path, 
             'destination' : destination, 
-            'created': datetime.datetime.now(),
+            'created': datetime.datetime.now().strftime("%m/%d/%Y, %H:%M:%S"),
             'visits': [],
-            'visited_count': 0})
+            'visit_count': 0})
         mongo.db.destinations.insert({'random_path' : random_path, 'destination' : destination})
 
     url += random_path
@@ -77,12 +80,15 @@ def create_custom_url():
         mongo.db.shortUrls.insert({
                     'path' : custom_path, 
                     'destination' : destination, 
-                    'created': datetime.datetime.now(),
+                    'created': datetime.datetime.now().strftime("%m/%d/%Y, %H:%M:%S"),
                     'visits': [],
-                    'visited_count': 0})
-        mongo.db.destinations.update_one({'destination' : destination}, {'$push': {'custom_paths' : custom_path}}, upsert=True)
+                    'visit_count': 0})
+        mongo.db.destinations.update_one(
+            {'destination' : destination},
+            {'$push': {'custom_paths' : custom_path}}, upsert=True)
 
-    return '/short/' + custom_path
+    url_root = request.url_root
+    return url_root + 'short/' + custom_path
 
 
 @app.route('/stats', methods=['GET'])
@@ -94,26 +100,26 @@ def get_stats():
     short_url = mongo.db.shortUrls.find_one_or_404({"path": path})
     stats = {}
     stats['Time Created'] = short_url['created']
-    stats['Total Visits'] = short_url['visited_count']
+    stats['Total Visits'] = short_url['visit_count']
     visits = short_url['visits']
     uniqueIps = []
     histogram = {}
 
     for visit in visits:
-        day = visit.time.date()
+        day = visit['time'].date()
         if (histogram.get(day) == None):
             histogram[day] = 1
         else:
             histogram[day] += 1
 
-        IP = visit.ip
+        IP = visit['ip']
         if IP not in uniqueIps:
             uniqueIps.append(IP)
 
     stats['Number of unique visitors'] = len(uniqueIps)
     stats['Histogram of Visits'] = histogram
 
-    stringResponse = string(stats)
+    stringResponse = str(stats)
 
     return stringResponse
 
@@ -126,22 +132,21 @@ def get_global_stats():
 
 @app.route('/short/<path>', methods=['GET'])
 def send_to_destination(path):
-    short_url = mongo.db.shortUrls.find_one_or_404({"path": path})
+    short_url = mongo.db.shortUrls.find_one_or_404({'path': path})
     if (short_url):
         dest = short_url['destination']
-        total_visits = 1
-        if (short_url['visited_count']):
-            total_visits += short_url['visited_count']
 
-        request_data = request.get_json()
-        visitorIP = request_data.remote_addr
+        #request_data = request.get_json()
+        visitorIP = request.remote_addr
         mongo.db.shortUrls.update_one(
-            {'path' : path},
-            {'$push': {'visited' : {
-            'time': datetime.datetime.today(),
+            {'path': path},
+            {'$push': {'visits' : {
+            'time': datetime.datetime.today().strftime("%m/%d/%Y, %H:%M:%S"),
             'ip': visitorIP}},
-            'visited_count' : total_visits})
-        mongo.db.systemInfo.update_one({'descriptor' : 'visits'}, {'$push': {'visits' : datetime.datetime.now()}}, upsert=True)
+            '$inc': { 'visit_count': 1} })
+        mongo.db.systemInfo.update_one(
+            {'descriptor' : 'visits'},
+            {'$push': {'visits' : datetime.datetime.now().strftime("%m/%d/%Y, %H:%M:%S")}}, upsert=True)
 
         return redirect(dest)
 
