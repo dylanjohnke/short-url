@@ -1,1 +1,1 @@
-web: python shorten.py
+web: python3 shorten.py
