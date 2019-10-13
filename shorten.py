@@ -84,6 +84,10 @@ def create_custom_url():
     request_data = request.get_json()
     destination = request_data['to']
     custom_path = request_data['custom_path']
+    accepted_characters = string.ascii_letters + string.digits + '-_'
+    for c in custom_path:
+        if (c not in accepted_characters):
+            return c + ' is not an accepted character. Custom url endpoint accepts alphanumeric characters, -, and _'
 
     #Look to see if this custom url is already in use
     found_existing = mongo.db.shortUrls.find_one({'path' : custom_path})
