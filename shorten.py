@@ -214,7 +214,8 @@ def send_to_destination(path):
             '$inc': { 'visit_count': 1} })
         mongo.db.systemInfo.update_one(
             {'descriptor' : 'visits'},
-            {'$push': {'visits' : datetime.datetime.now().strftime("%m/%d/%Y, %H:%M:%S")}}, upsert=True)
+            {'$push': {'visits' : datetime.datetime.now().strftime("%m/%d/%Y, %H:%M:%S")}},
+            upsert=True)
 
         return redirect(dest)
 
