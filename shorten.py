@@ -152,14 +152,15 @@ def get_stats():
 #No body required
 @app.route('/global-stats', methods=['GET'])
 def get_global_stats():
-    all_visited_urls = mongo.db.shortUrls.find({'visit_count': {'$exists': True, '$ne': 0}})
-    if (all_visited_urls.count_documents() == 0):
+    visit_times = mongo.db.systemInfo.find_one({'descriptor' : 'visits'})
+    if (visit_times == None or len(visit_times['visits'] == 0)):
         return 'No URLs have been visited'
-    else:
-        visited_urls = list(all_visited_urls)
+
+    all_visited_urls = list(mongo.db.shortUrls.find({'visit_count': {'$exists': True, '$ne': 0}}))
+    
     dates_histogram = {}
     domains_histogram = {}
-    for url in visited_urls:
+    for url in all_visited_urls:
         visits = url['visits']
         for visit in visits:
             visit_date = datetime.datetime.strptime(visit['time'], "%m/%d/%Y, %H:%M:%S")
