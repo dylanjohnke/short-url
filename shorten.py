@@ -190,9 +190,9 @@ def get_global_stats():
     if (domains_histogram != {}):
         most_visited_domain = str(max(domains_histogram, key=domains_histogram.get))
 
-    global_stats = 'Global Stats:<br/>' + 'Most Visited Domain: ' + 
-    most_visited_domain + ' <br/><br/>' + 'Visits per Domain:<br/>' + 
-    str(domains_histogram) + '<br/>' + 'Visits per Day (in UTC):<br/>' + str(dates_histogram)
+    global_stats = 'Global Stats:<br/>' + 'Most Visited Domain: '
+    global_stats += most_visited_domain + ' <br/><br/>' + 'Visits per Domain:<br/>'
+    global_stats += str(domains_histogram) + '<br/>' + 'Visits per Day (in UTC):<br/>' + str(dates_histogram)
 
     return global_stats
 
