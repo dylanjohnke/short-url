@@ -192,7 +192,7 @@ def get_global_stats():
 
     global_stats = 'Global Stats:<br/>' + 'Most Visited Domain: '
     global_stats += most_visited_domain + ' <br/><br/>' + 'Visits per Domain:<br/>'
-    global_stats += str(domains_histogram) + '<br/>' + 'Visits per Day (in UTC):<br/>' + str(dates_histogram)
+    global_stats += str(domains_histogram) + '<br/><br/>' + 'Visits per Day (in UTC):<br/>' + str(dates_histogram)
 
     return global_stats
 
