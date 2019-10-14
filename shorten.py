@@ -153,6 +153,8 @@ def get_stats():
 @app.route('/global-stats', methods=['GET'])
 def get_global_stats():
     all_visited_urls = mongo.db.shortUrls.find({'visit_count': {'$exists': True, '$ne': 0}})
+    if (all_visited_urls == None):
+        return 'No URLs have been visited'
     dates_histogram = {}
     domains_histogram = {}
     for url in all_visited_urls:
