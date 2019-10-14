@@ -198,6 +198,7 @@ def get_global_stats():
 
 
 # No body required
+# Redirects short url
 @app.route('/short/<path>', methods=['GET'])
 def send_to_destination(path):
     short_url = mongo.db.shortUrls.find_one_or_404({'path': path})
