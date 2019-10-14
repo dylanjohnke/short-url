@@ -171,9 +171,9 @@ def get_global_stats():
                 dates_histogram[day] += 1
 
         destination = url['destination']
-        parts = destination.split('/|//')
-        if (len(parts) > 1):
-            domain = parts[1]
+        parts = destination.split('//').pop().split('/')
+        if (len(parts) > 0):
+            domain = parts[0]
             if (domains_histogram.get(domain) == None):
                 domains_histogram[domain] = 1
             else:
