@@ -170,7 +170,7 @@ def get_global_stats():
                 dates_histogram[day] += 1
 
         destination = url['destination']
-        parts = destination.split('/')
+        parts = destination.split('/|//')
         if (len(parts) > 1):
             domain = parts[1]
             if (domains_histogram.get(domain) == None):
