@@ -130,7 +130,7 @@ def get_stats():
     histogram = {}
 
     for visit in visits:
-        visit_date = datetime.strptime(visit['time'], "%m/%d/%Y, %H:%M:%S")
+        visit_date = datetime.datetime.strptime(visit['time'], "%m/%d/%Y, %H:%M:%S")
         day = visit_date.strftime("%m/%d/%Y")
         if (histogram.get(day) == None):
             histogram[day] = 1
@@ -162,7 +162,7 @@ def get_global_stats():
     for url in visited_urls:
         visits = url['visits']
         for visit in visits:
-            visit_date = datetime.strptime(visit['time'], "%m/%d/%Y, %H:%M:%S")
+            visit_date = datetime.datetime.strptime(visit['time'], "%m/%d/%Y, %H:%M:%S")
             day = visit_date.strftime("%m/%d/%Y")
             if (dates_histogram.get(day) == None):
                 dates_histogram[day] = 1
