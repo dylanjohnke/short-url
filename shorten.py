@@ -153,7 +153,7 @@ def get_stats():
 @app.route('/global-stats', methods=['GET'])
 def get_global_stats():
     visit_times = mongo.db.systemInfo.find_one({'descriptor' : 'visits'})
-    if (visit_times == None or len(visit_times['visits'] == 0)):
+    if (visit_times == None or len(visit_times['visits']) == 0):
         return 'No URLs have been visited'
 
     all_visited_urls = list(mongo.db.shortUrls.find({'visit_count': {'$exists': True, '$ne': 0}}))
