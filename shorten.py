@@ -175,9 +175,9 @@ def get_global_stats():
         if (len(parts) > 0):
             domain = parts[0]
             if (domains_histogram.get(domain) == None):
-                domains_histogram[domain] = 1
+                domains_histogram[domain] = url['visit_count']
             else:
-                domains_histogram[domain] += 1
+                domains_histogram[domain] += url['visit_count']
 
     most_visited_domain = ''         
     if (domains_histogram != {}):
