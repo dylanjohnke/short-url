@@ -39,6 +39,7 @@ def default():
     return default_page
 
 
+#Body required
 @app.route('/create-short-url', methods=['POST'])
 def create_short_url():
     request_data = request.get_json()
@@ -79,6 +80,7 @@ def create_short_url():
     return url
 
 
+#Body required
 @app.route('/create-custom-url', methods=['POST'])
 def create_custom_url():
     request_data = request.get_json()
@@ -112,6 +114,7 @@ def create_custom_url():
     return url_root + 'short/' + custom_path
 
 
+#Body required
 @app.route('/stats', methods=['GET'])
 def get_stats():
     request_data = request.get_json()
@@ -127,7 +130,8 @@ def get_stats():
     histogram = {}
 
     for visit in visits:
-        day = visit['time'].date()
+        visit_date = datetime.strptime(visit['time'], "%m/%d/%Y, %H:%M:%S")
+        day = visit_date.date().strftime("%m/%d/%Y")
         if (histogram.get(day) == None):
             histogram[day] = 1
         else:
@@ -145,12 +149,46 @@ def get_stats():
     return stringResponse
 
 
+#No body required
 @app.route('/global-stats', methods=['GET'])
 def get_global_stats():
     all_visited_urls = mongo.db.shortUrls.find({'visit_count': {'$exists': True, '$ne': 0}})
-    return "Request not implemented"
+    dates_histogram = {}
+    domains_histogram = {}
+    for url in all_visited_urls:
+        visits = url['visits']
+        for visit in visits:
+            visit_date = datetime.strptime(visit['time'], "%m/%d/%Y, %H:%M:%S")
+            day = visit_date.date().strftime("%m/%d/%Y")
+            if (dates_histogram.get(day) == None):
+                dates_histogram[day] = 1
+            else:
+                dates_histogram[day] += 1
+
+        destination = url['destination']
+        parts = destination.split('/')
+        if (len(parts) > 1):
+            domain = parts[1]
+            if (domains_histogram.get(domain) == None):
+                domains_histogram[domain] = 1
+            else:
+                domains_histogram[domain] += 1
+
+    most_visited_domain = ''         
+    if (domains_histogram != {}):
+        most_visited_domain = max(domains_histogram, key=domains_histogram.get)
+
+    global_stats = 'Global Stats:<br/>'
+    + 'Most Visited Domain: ' + most_visited_domain + ' <br/><br/>'
+    + 'Visits per Domain:<br/>'
+    + str(domains_histogram) + '<br/>'
+    + 'Visits per Day:<br/>'
+    + str(dates_histogram)
+
+    return global_stats
 
 
+#No body required
 @app.route('/short/<path>', methods=['GET'])
 def send_to_destination(path):
     short_url = mongo.db.shortUrls.find_one_or_404({'path': path})
