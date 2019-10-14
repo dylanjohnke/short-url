@@ -39,7 +39,9 @@ def default():
     return default_page
 
 
-#Body required
+# Body required
+# Input: destination URL
+# Output: short URL (or error)
 @app.route('/create-short-url', methods=['POST'])
 def create_short_url():
     request_data = request.get_json()
@@ -54,8 +56,8 @@ def create_short_url():
     else:
         random_path = None
 
-        #Loop to make sure that you haven't generated a random path that already exists 
-        #Note: This should almost always loop only once, but just in case there is a timeout
+        # Loop to make sure that you haven't generated a random path that already exists 
+        # Note: This should almost always loop only once, but just in case there is a timeout
         timeout = 0
         while (random_path == None):
             random_path = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(8)])
@@ -80,7 +82,9 @@ def create_short_url():
     return url
 
 
-#Body required
+# Body required
+# Input: to: destination URL, custom_path: custom path
+# Output: short URL (or error)
 @app.route('/create-custom-url', methods=['POST'])
 def create_custom_url():
     request_data = request.get_json()
@@ -91,7 +95,7 @@ def create_custom_url():
         if (c not in accepted_characters):
             return c + ' is not an accepted character. Custom url endpoint accepts alphanumeric characters, -, and _'
 
-    #Look to see if this custom url is already in use
+    # Look to see if this custom url is already in use
     found_existing = mongo.db.shortUrls.find_one({'path' : custom_path})
     if (found_existing != None):
         if (found_existing['destination'] == destination):
@@ -114,7 +118,9 @@ def create_custom_url():
     return url_root + 'short/' + custom_path
 
 
-#Body required
+# Body required
+# Input: short URL
+# Output: Time Created, Total Visits, Number of unique visitors, and Histogram of Visits (or error)
 @app.route('/stats', methods=['GET'])
 def get_stats():
     request_data = request.get_json()
@@ -142,14 +148,15 @@ def get_stats():
             uniqueIps.append(IP)
 
     stats['Number of unique visitors'] = len(uniqueIps)
-    stats['Histogram of Visits'] = histogram
+    stats['Histogram of Visits (in UTC)'] = histogram
 
     stringResponse = str(stats)
 
     return stringResponse
 
 
-#No body required
+# No body required
+# Output: Most Visited Domain, Histogram of Visits per Domain, and Histogram of Visits per Day (or error)
 @app.route('/global-stats', methods=['GET'])
 def get_global_stats():
     visit_times = mongo.db.systemInfo.find_one({'descriptor' : 'visits'})
@@ -183,12 +190,14 @@ def get_global_stats():
     if (domains_histogram != {}):
         most_visited_domain = str(max(domains_histogram, key=domains_histogram.get))
 
-    global_stats = 'Global Stats:<br/>' + 'Most Visited Domain: ' + most_visited_domain + ' <br/><br/>' + 'Visits per Domain:<br/>' + str(domains_histogram) + '<br/>' + 'Visits per Day:<br/>' + str(dates_histogram)
+    global_stats = 'Global Stats:<br/>' + 'Most Visited Domain: ' + 
+    most_visited_domain + ' <br/><br/>' + 'Visits per Domain:<br/>' + 
+    str(domains_histogram) + '<br/>' + 'Visits per Day (in UTC):<br/>' + str(dates_histogram)
 
     return global_stats
 
 
-#No body required
+# No body required
 @app.route('/short/<path>', methods=['GET'])
 def send_to_destination(path):
     short_url = mongo.db.shortUrls.find_one_or_404({'path': path})
